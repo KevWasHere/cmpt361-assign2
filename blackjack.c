@@ -27,18 +27,22 @@ https://stackoverflow.com/questions/14388692/how-to-parse-a-small-json-file-with
 char *num_decks = "2";					//Default deck is 2 (Range from 1 - 10 decks)
 char *money_amount = "100";			//Default amount is $100
 char *timeout_timer ="15";			//Default timeout is 15 sec (Range from 10 - 45)
-char *port = "4420";						//Default port is 4420
+char *server_port = "4420";						//Default port is 4420
 char *min_bet = "1";						//Default bet is $1 (Anything > $1)
 
 //Prints usage message of the program and exits
 void usage(char *progname){
 	char *base;
 	base = basename(progname);
-	printf("usage: %s [-d deck] [-m money] [-t timer] [-p server_port]" 
-	"[-b min_bet] [-h]\n"
-	"Default Port - 4420\nCommand Summary:\n\t-d\t\tNumber of Decks\n\t"
-	"-m\t\tAmount of Money\n\t-t\t\tServer Timer\n\t"
-	"-p\t\tServer Port\n\t-b\t\tMinimum Bet\n\t-h\t\tThis help\n", base);
+	printf("usage: %s [-d num_decks] [-m money_amount] [-t timeout_timer]"
+	"[-p server_port] [-b min_bet] [-h]\n"
+	"\tDefault Number of Desks - 2\n\tDefault Amount of Money - $100\n\t"
+	"Default Timeout Timer - 15 seconds\n\tDefault Port - 4420\n\t"
+	"Default Minimum Bet - $1\n"
+	"Command Summary:\n\t-d\t\tNumber of Decks (Range of 1 - 10 Decks)\n\t"
+	"-m\t\tAmount of Money\n\t-t\t\tServer Timer (Range of 10 - 45 seconds)\n\t"
+	"-p\t\tServer Port\n\t-b\t\tMinimum Bet (Range of > $1)\n\t-h\t\t"
+	"This help\n", base);
 	exit(1);
 }
 
@@ -46,7 +50,7 @@ void usage(char *progname){
 void blackjack_options(int argc, char *argv[]){
 	int ch;
 	while((ch = getopt(argc, argv, "d:m:t:p:b:h")) != -1){
-		printf("Ecountered option: %c\n", (char)ch);
+		//printf("Ecountered option: %c\n", (char)ch);
 		switch(ch){
 			case 'd':
 				num_decks = optarg;
@@ -61,8 +65,8 @@ void blackjack_options(int argc, char *argv[]){
 				printf("Timer [%s]!\n", timeout_timer);
 				break;
 			case 'p':
-				port = optarg;
-				printf("Port [%s]!\n", port);
+				server_port = optarg;
+				printf("Port [%s]!\n", server_port);
 				break;
 			case 'b':
 				min_bet = optarg;
@@ -70,9 +74,10 @@ void blackjack_options(int argc, char *argv[]){
 				break;
 			case 'h':
 				usage(argv[0]);
-				break;
+				//break;
 			default:
-				continue;
+				usage(argv[0]);
+				//continue;
 		}
 	}
 }
@@ -83,7 +88,7 @@ int main(int argc, char *argv[]){
 	
 	//Remove later
 	printf("Number of Decks [%s], Amount of Money [%s], Timer [%s], Port [%s], "
-	"Minimum Bet [%s]\n", num_decks, money_amount, timeout_timer, port, min_bet);
+	"Minimum Bet [%s]\n", num_decks, money_amount, timeout_timer, server_port, min_bet);
 	
 	int sock_fd;
 	sock_fd = new_socket();
