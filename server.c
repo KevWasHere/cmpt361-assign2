@@ -1,6 +1,6 @@
 /*-------------------------------------------------------------------------
   # Student's Name: Kevin Ho
-  # CMPT 361 Assignment #1
+  # CMPT 361 Assignment #2
   # server.c
   # Functions that create a server for server-client connection
 *-----------------------------------------------------------------------*/
@@ -19,8 +19,12 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 
+#include <sys/select.h>
+#include <sys/time.h>
+
 #define BACKLOG 20 //20 Pending connections allowed 
-#define BUF_SIZE 500
+#define BUF_SIZE 320
+#define REQUEST_SIZE 13
 
 /*Reference
 Used for SIGCLD Handler
@@ -71,11 +75,8 @@ int new_socket(){
 	int sock_fd;
 	int val = 1;
 	
-	//getnameinfo
-	struct sockaddr_storage peer_addr;
-  socklen_t peer_addr_len;
-	ssize_t nread;
-	char buf[BUF_SIZE];
+	//select
+	//fd_set read_fds, write_fds;
 
 	memset(&hints, 0, sizeof(hints));
 
@@ -118,42 +119,197 @@ int new_socket(){
 		break;
 	}
 	printf("Server: Waiting for Connections...\n");
-
-	freeaddrinfo(server_info);  //Done with Struct
-	
-	
-	
-	//Test. Change later. Move to seperate function 
-	//getaddrinfo manpage http://man7.org/linux/man-pages/man3/getaddrinfo.3.html
-	//nc -u localhost 4420
-	
-	while(1){
-	peer_addr_len = sizeof(struct sockaddr_storage);
-	nread = recvfrom(sock_fd, buf, BUF_SIZE, 0, (struct sockaddr *) &peer_addr,
-				&peer_addr_len);
-	if (nread == -1)
-			continue;               /* Ignore failed request */
-
-	char host[NI_MAXHOST], service[NI_MAXSERV];
-
-	err = getnameinfo((struct sockaddr *) &peer_addr, peer_addr_len,
-				host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICSERV);
-	if (err == 0)
-		printf("Received %zd bytes from %s:%s\n", nread, host, service);
-	else
-		fprintf(stderr, "getnameinfo: %s\n", gai_strerror(err));
-
-	if (sendto(sock_fd, buf, nread, 0, (struct sockaddr *) &peer_addr, 
-				peer_addr_len) != nread)
-		fprintf(stderr, "Error sending response\n");
-	}
 	
 	if (current == NULL){
 		fprintf(stderr, "Could not create server\n");
 		exit(1);
 	}
+
+	freeaddrinfo(server_info);  //Done with Struct
 	
+	
+	/*
+	FD_ZERO(&read_fds);
+	FD_ZERO(&write_fds);
+	FD_SET(sock_fd, &read_fds);
+	*/
+	
+	//Test. Change later. Move to seperate function 
+	//getaddrinfo manpage http://man7.org/linux/man-pages/man3/getaddrinfo.3.html
+	//Select https://github.com/nvurgaft/UDP-server-with-select-/blob/master/server.c
+	//nc -u localhost 4420
+	//echo "msg" > /dev/udp/localhost/4420
+		
+		/*
+		if (sendto(sock_fd, buf, nread, 0, (struct sockaddr *) &client_addr, 
+					client_addr_len) != nread){
+			perror("Server: sendto");
+		}*/
+		
+		
+		//Select stuff
+		
+		/*
+		struct timeval timeout = {
+			.tv_sec = 0,
+			.tv_usec = 1000e3,
+		};
+		int err = select(sock_fd + 1, &read_fds, &write_fds, NULL, &timeout);
+		
+		if (err == -1){
+			close(sock_fd);
+			perror("Server: select");
+			exit(1);
+		} 
+		*/
+		
+		//printf("Before FD_ISSET\n");
+		//printf("%d\n", FD_ISSET(sock_fd, &read_fds));
+		
+		/*
+		if (FD_ISSET(0, &read_fds)){
+			printf("Server: Waiting for Connections...\n");
+		
+			client_addr_len = sizeof(struct sockaddr_storage);
+			//Changed nread to err. Change back if errors
+			nread = recvfrom(sock_fd, buf, BUF_SIZE, 0, (struct sockaddr *) &client_addr,
+						&client_addr_len);
+	
+			//printf("Recvfrom: %sn", buf);
+	
+	
+			//Continue if failed request to get next request
+			if (nread == -1){
+				perror("Server: recvfrom");
+				continue;
+			}
+			
+			//FD_CLR(sock_fd, &read_fds);
+		}
+		*/
+		
+		//Still need to do write_fds and save read_fds to buff
+		
+		/*
+		char* buf = (char*)malloc(320);		
+		char* copybuf = (char*)malloc(320);
+		
+		if (buf == NULL){
+			fprintf(stderr, "Malloc Failed\n");
+		exit(1);
+		}
+		*/
+		
+		/*
+		if (copybuf == NULL){
+			fprintf(stderr, "Malloc Failed\n");
+		exit(1);
+		}
+		
+	*/
+	
+	/*
+		if (strlen(buf) != 0){
+			memcpy(copybuf, buf, strlen(buf));
+			
+			int i = strlen(buf) + 3 + strlen(inet_ntoa(cli_addr.sin_addr)) + ntohs(cli_addr.sin_port);
+		*/
+		
+		/*
+		//FD_ZERO(&write_fds);
+		FD_SET(sock_fd, &write_fds);
+		if(FD_ISSET(sock_fd, &write_fds)){
+			//toUpper(copybuf);
+			err = sendto(sock_fd, buf, nread, 0, (struct sockaddr *) &client_addr, 
+						client_addr_len);
+			if(err == -1) {
+				perror("Server: sendto");
+				close(sock_fd);
+				exit(1);
+			}
+			printf("Server is ready to write\n");
+			//printf("Send to client: %s", copybuf);
+			//printf("==========================\n");
+			printf("\n");
+			//memset(&copybuf, 0, sizeof(copybuf));
+			FD_CLR(sock_fd, &write_fds);
+		}
+	}*/
+	
+	//close(sock_fd);
+
 	return sock_fd;
+}
+
+//
+void recv_loop(int sock_fd){
+	//getnameinfo
+	int err;
+	struct sockaddr_storage client_addr;
+  socklen_t client_addr_len;
+	ssize_t nread;
+	//char buf[BUF_SIZE];
+	
+	//REMEMBER TO FREE LATER!!!
+	uint32_t *buf = malloc(BUF_SIZE * sizeof(uint32_t));
+	
+	if (buf == NULL){
+		fprintf(stderr, "Malloc Failed\n");
+		exit(1);
+	}
+	
+	memset(&buf, 0, BUF_SIZE);
+	
+	memset(&buf, 1, 1); 
+	//memset(&buf+3, 2, 1);
+
+	printf("buf: %zu\n", buf);
+	
+	while(1){
+		
+		client_addr_len = sizeof(struct sockaddr_storage);
+		//Changed nread to err. Change back if errors. Can prob change later. Just checking bytes
+		nread = recvfrom(sock_fd, &buf, BUF_SIZE, 0, (struct sockaddr *) &client_addr,
+					&client_addr_len);
+		printf("buf: %zu\n", buf);
+		
+		if (nread == REQUEST_SIZE){
+			printf("Request line!\n");
+			
+			//Something wrong here
+			if (&buf[0] == (uint32_t *) 1){
+				printf("Request line!\n");
+			}
+			//Initial play for game here. 
+			//Send state of game
+		}
+		//Currently in game
+	
+		//Continue if failed request to get next request
+		if (nread == -1){
+			perror("Server: recvfrom");
+			continue;
+		}
+		
+		char host[NI_MAXHOST], service[NI_MAXSERV];
+
+		err = getnameinfo((struct sockaddr *) &client_addr, client_addr_len,
+					host, NI_MAXHOST, service, NI_MAXSERV, NI_NUMERICSERV);
+					
+		if (err == 0){
+			printf("Received %zd bytes from %s:%s\n", nread, host, service);
+		} else {
+			fprintf(stderr, "getnameinfo: %s\n", gai_strerror(err));
+		}
+		
+		err = sendto(sock_fd, &buf, nread, 0, (struct sockaddr *) &client_addr, 
+				client_addr_len);
+
+		if (err == -1){
+			perror("Server: sendto");
+		} 
+	}
+	return;
 }
 
 //Fork for accept connection

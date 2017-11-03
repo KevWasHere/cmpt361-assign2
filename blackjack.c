@@ -92,6 +92,8 @@ int main(int argc, char *argv[]){
 	
 	int sock_fd;
 	sock_fd = new_socket();
+	recv_loop(sock_fd);
+	close(sock_fd);
 	//clean_chld();
 	//accept_loop(sock_fd);
 	

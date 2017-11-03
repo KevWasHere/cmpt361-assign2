@@ -4,6 +4,9 @@ CFLAGS=-std=c99 -Wall -pedantic -D_POSIX_C_SOURCE=201112L -D_GNU_SOURCE -D_DEFAU
 
 all: blackjack
 
+hexdump: hexdump.c
+	$(CC) $(CFLAGS) -o $@ $^
+
 select: select.o
 	$(CC) $(LDFLAGS) -o $@ $^
 	
@@ -17,6 +20,12 @@ blackjack.o: blackjack.c
 	$(CC) $(CFLAGS) -c $<
 	
 server.o: server.c server.h
+	$(CC) $(CFLAGS) -c $<
+
+game: game.o
+	$(CC) $(LDFLAGS) -o $@ $^
+	
+game.o: game.c game.h
 	$(CC) $(CFLAGS) -c $<
 
 clean:
