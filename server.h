@@ -1,14 +1,19 @@
+/*-------------------------------------------------------------------------
+  # Student's Name: Kevin Ho
+  # CMPT 361 Assignment #2
+  # server.h
+  # server.c header
+*-----------------------------------------------------------------------*/
+
 #ifndef SERVER_H
 #define SERVER_H
 
-
-//Add comments here
-
 /*Prototypes*/
+
+//Creates a new socket for a UDP server
 int new_socket();
-void clean_chld();
-int accept_loop(int sock_fd);
-//void *get_in_addr(struct sockaddr *current_addr);
-int accept_fork(int sock_fd, int new_fd);
+
+//Recvfrom and sendto loop.
+//Parameters: sock_fd - socket created from new_socket()
 void recv_loop(int sock_fd);
 #endif

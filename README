@@ -1,0 +1,3 @@
+As of submission, the server only works up to the part of accepting the client’s initial connection request and moving them into the first seat on the table.
+ 
+Included with the submission are the makefile, server.c/h which contains the UDP server and broken select code, game.c/h that contains a partially completed blackjack game (Does not do the calculations, only sets up cards and deal hands), and blackjack.c which is the main file. 
